@@ -1,4 +1,3 @@
-// src/store/auth.ts
 import { defineStore } from "pinia";
 import { login, logout } from "@/api/auth";
 import router from "@/router";  // Adjust import path as needed
