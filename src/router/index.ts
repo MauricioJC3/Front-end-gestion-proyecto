@@ -3,6 +3,10 @@ import Cars from "@/views/CarsView.vue";
 import Login from "@/modules/Auth/pages/loginPages.vue";
 import Dashboard from "@/modules/dashboard/pages/DashboardPages.vue";
 import { useAuthStore } from "@/modules/Auth/stores/auth";
+import Projects from "@/modules/gestion_proyectos/pages/ProjectsPages.vue";
+import ProjectTags from "@/modules/gestion_proyectos/pages/ProjectTagsPages.vue";
+import Tasks from "@/modules/gestion_proyectos/pages/TasksPages.vue";
+import ProjectsAll from "@/modules/gestion_proyectos/pages/ProjectAllPages.vue";
 
 const routes = [
   { path: "/", component: Cars, name: "home" },
@@ -14,6 +18,31 @@ const routes = [
     name: "Dashboard",
     meta: { requiresAuth: true }, // Ruta protegida
   },
+  {
+    path: "/projects",
+    component: Projects,
+    name: "Projects",
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/tags",
+    component: ProjectTags,
+    name: "Tags",
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/tasks",
+    component: Tasks,
+    name: "tasks",
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/projects/all",
+    component: ProjectsAll,
+    name: "projects-all",
+    meta: { requiresAuth: true }
+  },
+  
 ];
 
 const router = createRouter({
