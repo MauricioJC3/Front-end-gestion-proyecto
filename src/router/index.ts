@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Cars from "@/views/CarsView.vue";
-import Login from "@/views/Login.vue";
-import Dashboard from "@/views/Dashboard.vue";
-import { useAuthStore } from "@/store/auth";
+import Login from "@/modules/Auth/pages/loginPages.vue";
+import Dashboard from "@/modules/dashboard/pages/DashboardPages.vue";
+import { useAuthStore } from "@/modules/Auth/stores/auth";
 
 const routes = [
   { path: "/", component: Cars, name: "home" },

@@ -8,7 +8,7 @@
   </template>
   
   <script setup>
-  import { useAuthStore } from "@/store/auth";
+  import { useAuthStore } from "@/modules/Auth/stores/auth";
   import Navbar from "@/components/Navbar.vue";
   
   const auth = useAuthStore();

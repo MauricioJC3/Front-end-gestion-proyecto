@@ -11,8 +11,8 @@
   
   <script setup>
   import { ref } from "vue";
-  import { useAuthStore } from "@/store/auth";
-  import AuthLayout from "@/layouts/AuthLayout.vue";
+  import { useAuthStore } from "@/modules/Auth/stores/auth";
+  import AuthLayout from "../layouts/AuthLayout.vue";
   import Button from "@/components/Button.vue";
   
   const email = ref("");

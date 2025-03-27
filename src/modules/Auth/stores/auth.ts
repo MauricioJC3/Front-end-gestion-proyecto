@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { login, logout } from "@/api/auth";
+import { login } from "../endpoint/loginEndpoint";
+import { logout } from "../endpoint/logoutEndpoint";
 import router from "@/router";  // Adjust import path as needed
 
 export const useAuthStore = defineStore("auth", {

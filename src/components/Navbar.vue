@@ -6,7 +6,7 @@
   </template>
   
   <script setup>
-  import { useAuthStore } from "@/store/auth";
+  import { useAuthStore } from "@/modules/Auth/stores/auth";
   const auth = useAuthStore();
   </script>
   
