@@ -73,7 +73,7 @@
   
   <script setup>
   import { ref, onMounted } from 'vue'
-  import { useProjectStore } from '../store/projectStore'
+  import { useProjectStore } from '../store/projects/projectStore'
   import { useRouter } from 'vue-router'
   
   // Initialize stores and router

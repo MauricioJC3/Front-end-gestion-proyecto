@@ -96,8 +96,8 @@
   
   <script setup>
   import { ref, onMounted } from 'vue'
-  import { useProjectStore } from '../store/projectStore'
-  import { useTagStore } from '../store/tagStore'
+  import { useProjectStore } from '../store/projects/projectStore'
+  import { useTagStore } from '../store/tags/tagStore'
   import { useRouter } from 'vue-router'
   
   // Initialize stores and router

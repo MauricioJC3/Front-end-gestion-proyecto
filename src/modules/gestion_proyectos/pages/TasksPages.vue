@@ -136,9 +136,9 @@
   
   <script setup>
   import { ref, onMounted, computed } from 'vue'
-  import { useProjectStore } from '../store/projectStore'
-  import { useTagStore } from '../store/tagStore'
-  import { useTaskStore } from '../store/taskStore'
+  import { useProjectStore } from '../store/projects/projectStore'
+  import { useTagStore } from '../store/tags/tagStore'
+  import { useTaskStore } from '../store/tasks/taskStore'
   
   // Initialize stores
   const projectStore = useProjectStore()

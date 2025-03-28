@@ -56,9 +56,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useProjectStore } from '../store/projectStore';
-import { useTagStore } from '../store/tagStore';
-import { useTaskStore } from '../store/taskStore';
+import { useProjectStore } from '../store/projects/projectStore';
+import { useTagStore } from '../store/tags/tagStore';
+import { useTaskStore } from '../store/tasks/taskStore';
 
 const projectStore = useProjectStore();
 const tagStore = useTagStore();
@@ -70,19 +70,21 @@ const projectTags = computed(() => tagStore.tags);
 
 const tasksByTag = computed(() => {
   const taskMap: Record<number, Task[]> = {};
-  projectTags.value.forEach(tag => {
+  for (const tag of projectTags.value) {
     taskMap[tag.id] = projectTasks.value.filter(task => task.tag_id === tag.id);
-  });
+  }
   return taskMap;
 });
+
 
 // Función para formatear la fecha y hora
 const formatDate = (dateString: string | null) => {
   if (!dateString) return "Sin fecha";
   const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) + 
-         " " + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  return `${date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} 
+          ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
 };
+
 
 const openProjectModal = async (project: Project) => {
   selectedProject.value = project;
