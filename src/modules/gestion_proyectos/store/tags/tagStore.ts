@@ -1,16 +1,7 @@
 import { handleApiError } from "@/util/handleApiError";
-// src/stores/tagStore.ts
 import { defineStore } from "pinia";
 import * as tagEndpoints from "../../endpoint/tagEndpoints";
-
-export interface Tag {
-	id: number;
-	project_id: number;
-	name: string;
-	color?: string;
-	created_at: string;
-	updated_at: string;
-}
+import type { Tag } from "../../interfaces/tagInterface";
 
 export const useTagStore = defineStore("tag", {
 	state: () => ({

@@ -1,17 +1,7 @@
 import { handleApiError } from "@/util/handleApiError";
 import { defineStore } from "pinia";
 import * as taskEndpoints from "../../endpoint/taskEndpoints";
-
-export interface Task {
-	id: number;
-	tag_id: number;
-	name: string;
-	description?: string;
-	due_date?: string;
-	completed: boolean;
-	created_at: string;
-	updated_at: string;
-}
+import type { Task } from "../../interfaces/taskInterface";
 
 export const useTaskStore = defineStore("task", {
 	state: () => ({
