@@ -4,6 +4,7 @@ import ProjectsAll from "@/modules/gestion_proyectos/pages/ProjectAllPages.vue";
 import ProjectTags from "@/modules/gestion_proyectos/pages/ProjectTagsPages.vue";
 import Projects from "@/modules/gestion_proyectos/pages/ProjectsPages.vue";
 import Tasks from "@/modules/gestion_proyectos/pages/TasksPages.vue";
+import pruebaPages from "@/modules/gestion_proyectos/pages/pruebaPages.vue";
 import Cars from "@/views/CarsView.vue";
 import Dashboard from "@/views/DashboardPages.vue";
 import { createRouter, createWebHistory } from "vue-router";
@@ -40,6 +41,12 @@ const routes = [
 		path: "/projects/all",
 		component: ProjectsAll,
 		name: "projects-all",
+		meta: { requiresAuth: true },
+	},
+	{
+		path: "/prueba",
+		component: pruebaPages,
+		name: "prueba",
 		meta: { requiresAuth: true },
 	},
 ];

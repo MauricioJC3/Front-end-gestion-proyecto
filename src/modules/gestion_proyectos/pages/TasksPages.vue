@@ -1,224 +1,167 @@
-<!-- src/views/TasksView.vue -->
 <template>
-    <div class="tasks-container">
-      <h1 class="text-2xl font-bold mb-4">Tasks</h1>
-  
-      <!-- Project and Tag Selector -->
-      <div class="mb-6 flex space-x-4">
-        <div class="flex-1">
-          <label class="block mb-2">Select Project</label>
-          <select 
-            v-model="selectedProjectId" 
-            @change="updateTagOptions"
-            class="border p-2 w-full"
-          >
-            <option value="">Select a Project</option>
-            <option 
-              v-for="project in projectStore.projects" 
-              :key="project.id" 
-              :value="project.id"
+  <div :class="['h-screen flex', darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900']">
+    <!-- Panel principal -->
+    <div class="flex-1 p-6 overflow-y-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold">Project Management</h1>
+          <button @click="toggleDarkMode" class="px-4 py-2 rounded bg-gray-700 text-white">
+            {{ darkMode ? 'Light Mode' : 'Dark Mode' }}
+          </button>
+        </div>
+
+        <!-- Crear Proyecto -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold mb-3">New Project</h2>
+          <form @submit.prevent="createProject" class="flex gap-2 mb-6">
+            <input v-model="newProject.name" placeholder="Project Name" class="border p-2 flex-1 rounded" required />
+            <input v-model="newProject.description" placeholder="Description" class="border p-2 flex-1 rounded" />
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create</button>
+          </form>
+        </div>
+
+        <!-- Proyectos Existentes -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold mb-3">Existing Projects</h2>
+          <div v-for="project in projectStore.projects" :key="project.id" class="mb-2">
+            <button 
+              @click="selectProject(project.id)" 
+              :class="['p-2 rounded w-full text-left', 
+                currentProjectId === project.id ? 'bg-blue-200' : 'bg-gray-100 hover:bg-gray-200']"
             >
               {{ project.name }}
-            </option>
-          </select>
-        </div>
-  
-        <div class="flex-1">
-          <label class="block mb-2">Select Tag</label>
-          <select 
-            v-model="selectedTagId" 
-            @change="fetchTasksForTag"
-            class="border p-2 w-full"
-            :disabled="!selectedProjectId"
-          >
-            <option value="">Select a Tag</option>
-            <option 
-              v-for="tag in tagsForProject" 
-              :key="tag.id" 
-              :value="tag.id"
-            >
-              {{ tag.name }}
-            </option>
-          </select>
-        </div>
-      </div>
-  
-      <!-- Create Task Form -->
-      <form 
-        @submit.prevent="createTask" 
-        class="mb-6 grid grid-cols-2 gap-4"
-        v-if="selectedTagId"
-      >
-        <input 
-          v-model="newTask.name" 
-          placeholder="Task Name" 
-          class="border p-2"
-          required
-        />
-        <input 
-          v-model="newTask.description" 
-          placeholder="Description (optional)" 
-          class="border p-2"
-        />
-        <input 
-          v-model="newTask.due_date" 
-          type="date" 
-          class="border p-2"
-        />
-        <button 
-          type="submit" 
-          class="bg-blue-500 text-white p-2 rounded"
-        >
-          Create Task
-        </button>
-      </form>
-  
-      <!-- Loading State -->
-      <div v-if="taskStore.loading" class="text-center">
-        Loading tasks...
-      </div>
-  
-      <!-- Error State -->
-      <div v-if="taskStore.error" class="bg-red-100 text-red-700 p-4 rounded">
-        {{ taskStore.error }}
-      </div>
-  
-      <!-- Tasks List -->
-      <div v-if="taskStore.tasks.length" class="space-y-4">
-        <div 
-          v-for="task in taskStore.tasks" 
-          :key="task.id" 
-          class="border p-4 rounded flex justify-between items-center"
-          :class="{
-            'bg-green-50': task.completed,
-            'bg-white': !task.completed
-          }"
-        >
-          <div>
-            <h2 
-              class="text-xl font-semibold"
-              :class="{ 'line-through text-gray-500': task.completed }"
-            >
-              {{ task.name }}
-            </h2>
-            <p class="text-gray-600">{{ task.description }}</p>
-            <p v-if="task.due_date" class="text-sm text-gray-500">
-              Due: {{ new Date(task.due_date).toLocaleDateString() }}
-            </p>
-          </div>
-          <div class="flex space-x-2">
-            <button 
-              v-if="!task.completed"
-              @click="completeTask(task.id)" 
-              class="bg-green-500 text-white px-3 py-1 rounded"
-            >
-              Complete
-            </button>
-            <button 
-              @click="deleteTask(task.id)" 
-              class="bg-red-500 text-white px-3 py-1 rounded"
-            >
-              Delete
             </button>
           </div>
         </div>
-      </div>
-  
-      <!-- No Tasks State -->
-      <div 
-        v-else-if="!taskStore.loading && selectedTagId" 
-        class="text-center text-gray-500"
-      >
-        No tasks found for this tag. Create your first task!
+
+        <!-- Crear Etiqueta -->
+        <div v-if="currentProjectId" class="mb-8">
+          <h2 class="text-xl font-semibold mb-3">Project Tags</h2>
+          <form @submit.prevent="createTag" class="flex gap-2 mb-6">
+            <input v-model="newTag.name" placeholder="Tag Name" class="border p-2 flex-1 rounded" required />
+            <input v-model="newTag.color" type="color" class="border p-2 rounded" />
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create Tag</button>
+          </form>
+        </div>
+
+        <!-- Crear Tarea -->
+        <div v-if="currentProjectId" class="mb-8">
+          <h2 class="text-xl font-semibold mb-3">New Task</h2>
+          <form @submit.prevent="createTask" class="flex gap-2 mb-6">
+            <input v-model="newTask.name" placeholder="Task Name" class="border p-2 flex-1 rounded" required />
+            <select v-model="newTask.tag_id" class="border p-2 rounded flex-1" required>
+              <option value="" disabled>Select a tag</option>
+              <option v-for="tag in projectTags" :key="tag.id" :value="tag.id">
+                {{ tag.name }}
+              </option>
+            </select>
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Add Task</button>
+          </form>
+        </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, computed } from 'vue'
-  import { useProjectStore } from '../store/projects/projectStore'
-  import { useTagStore } from '../store/tags/tagStore'
-  import { useTaskStore } from '../store/tasks/taskStore'
-  
-  // Initialize stores
-  const projectStore = useProjectStore()
-  const tagStore = useTagStore()
-  const taskStore = useTaskStore()
-  
-  // Reactive variables
-  const selectedProjectId = ref(null)
-  const selectedTagId = ref(null)
-  const newTask = ref({
-    name: '',
-    description: '',
-    due_date: ''
-  })
-  
-  // Computed property for tags based on selected project
-  const tagsForProject = computed(() => {
-    return selectedProjectId.value 
-      ? tagStore.tags.filter(tag => tag.project_id === selectedProjectId.value)
-      : []
-  })
-  
-  // Fetch projects and tags on mount
-  onMounted(() => {
-    projectStore.fetchProjects()
-  })
-  
-  // Update tag options when project is selected
-  const updateTagOptions = () => {
-    // Reset tag selection
-    selectedTagId.value = null
-    
-    // Fetch tags for the selected project
-    if (selectedProjectId.value) {
-      tagStore.fetchTagsByProject(selectedProjectId.value)
-    }
+
+    <!-- Vista previa alineada a la derecha -->
+    <div v-if="currentProject" class="w-1/3 border-l p-6 overflow-y-auto bg-white text-black">
+      <h2 class="text-2xl font-bold">{{ currentProject.name }}</h2>
+      <p class="text-gray-700">{{ currentProject.description }}</p>
+      <div v-for="tag in projectTags" :key="tag.id" class="mt-4">
+        <h3 class="text-xl font-semibold" :style="{ color: tag.color }">{{ tag.name }}</h3>
+        <ul class="list-disc ml-6">
+          <li v-for="task in filteredTasks[tag.id]" :key="task.id">{{ task.name }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { useProjectStore } from '../store/projects/projectStore';
+import { useTagStore } from '../store/tags/tagStore';
+import { useTaskStore } from '../store/tasks/taskStore';
+
+const projectStore = useProjectStore();
+const tagStore = useTagStore();
+const taskStore = useTaskStore();
+
+const newProject = ref({ name: '', description: '' });
+const newTag = ref({ name: '', color: '#000000' });
+const newTask = ref({ name: '', tag_id: '' });
+const darkMode = ref(false);
+const currentProjectId = ref(null);
+
+const currentProject = computed(() => projectStore.projects.find(proj => proj.id === currentProjectId.value) || null);
+const projectTags = computed(() => tagStore.tags.filter(tag => tag.project_id === currentProjectId.value));
+
+const filteredTasks = computed(() => {
+  const tasksByTag = {};
+  for (const tag of projectTags.value) {
+    tasksByTag[tag.id] = taskStore.tasks.filter(task => 
+      task.tag_id === tag.id && task.project_id === currentProjectId.value
+    );
   }
-  
-  // Fetch tasks for selected tag
-  const fetchTasksForTag = () => {
-    if (selectedTagId.value) {
-      taskStore.fetchTasksByTag(selectedTagId.value)
-    }
+  return tasksByTag;
+});
+
+// Nuevo método para seleccionar proyecto
+const selectProject = (projectId) => {
+  currentProjectId.value = projectId;
+};
+
+const toggleDarkMode = () => {
+  darkMode.value = !darkMode.value;
+};
+
+const createProject = async () => {
+  if (!newProject.value.name.trim()) {
+    alert('El nombre del proyecto es obligatorio.');
+    return;
   }
-  
-  // Create a new task
-  const createTask = async () => {
-    try {
-      await taskStore.createTask({
-        tag_id: selectedTagId.value,
-        name: newTask.value.name,
-        description: newTask.value.description,
-        due_date: newTask.value.due_date
-      })
-      // Reset form
-      newTask.value.name = ''
-      newTask.value.description = ''
-      newTask.value.due_date = ''
-    } catch (error) {
-      console.error('Failed to create task', error)
-    }
+  try {
+    const createdProject = await projectStore.createProject(newProject.value);
+    currentProjectId.value = createdProject.id;
+    newProject.value = { name: '', description: '' };
+  } catch (error) {
+    console.error('Error al crear el proyecto:', error);
   }
-  
-  // Complete a task
-  const completeTask = async (taskId) => {
-    try {
-      await taskStore.completeTask(taskId)
-    } catch (error) {
-      console.error('Failed to complete task', error)
-    }
+};
+
+const createTag = async () => {
+  if (!newTag.value.name.trim()) {
+    alert('El nombre de la etiqueta es obligatorio.');
+    return;
   }
-  
-  // Delete a task
-  const deleteTask = async (taskId) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      try {
-        await taskStore.deleteTask(taskId)
-      } catch (error) {
-        console.error('Failed to delete task', error)
-      }
-    }
+  if (!currentProjectId.value) {
+    alert('No hay un proyecto seleccionado.');
+    return;
   }
-  </script>
+  try {
+    await tagStore.createTag({ ...newTag.value, project_id: currentProjectId.value });
+    newTag.value = { name: '', color: '#000000' };
+  } catch (error) {
+    console.error('Error al crear la etiqueta:', error);
+  }
+};
+
+const createTask = async () => {
+  if (!newTask.value.name.trim()) {
+    alert('El nombre de la tarea es obligatorio.');
+    return;
+  }
+  if (!newTask.value.tag_id) {
+    alert('Debe seleccionar una etiqueta.');
+    return;
+  }
+  if (!currentProjectId.value) {
+    alert('No hay un proyecto seleccionado.');
+    return;
+  }
+  try {
+    await taskStore.createTask({ ...newTask.value, project_id: currentProjectId.value });
+    newTask.value = { name: '', tag_id: '' };
+  } catch (error) {
+    console.error('Error al crear la tarea:', error);
+  }
+};
+</script>

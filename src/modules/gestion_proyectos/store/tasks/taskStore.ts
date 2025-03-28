@@ -1,7 +1,12 @@
-import { handleApiError } from "@/util/handleApiError";
 import { defineStore } from "pinia";
-import * as taskEndpoints from "../../endpoint/taskEndpoints";
 import type { Task } from "../../interfaces/taskInterface";
+import { assignTask } from "./actions/assignTask";
+import { completeTask } from "./actions/completeTask";
+import { createTask } from "./actions/createTask";
+import { deleteTask } from "./actions/deleteTask";
+import { fetchTaskById } from "./actions/fetchTaskById";
+import { fetchTasksByTag } from "./actions/fetchTasksByTag";
+import { updateTask } from "./actions/updateTask";
 
 export const useTaskStore = defineStore("task", {
 	state: () => ({
@@ -12,145 +17,14 @@ export const useTaskStore = defineStore("task", {
 	}),
 
 	actions: {
-		async fetchTasksByTag(tagId: number) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.getAllTasksByTag(tagId);
-				this.tasks = Array.isArray(response.data.data)
-					? response.data.data
-					: [];
-				return this.tasks;
-			} catch (error) {
-				this.error = handleApiError(error); // ✅ Uso del helper
-				console.error("Error al obtener tareas:", error);
-				return [];
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async fetchTaskById(taskId: number) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.getTaskById(taskId);
-				this.currentTask = response.data.data;
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al obtener tarea:", error);
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async createTask(taskData: {
-			tag_id: number;
-			name: string;
-			description?: string;
-			due_date?: string;
-		}) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.createTask(taskData);
-				const newTask = response.data.data;
-				this.tasks.push(newTask);
-				return newTask;
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al crear tarea:", error);
-				throw error;
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async updateTask(
-			taskId: number,
-			taskData: {
-				name?: string;
-				description?: string;
-				due_date?: string;
-				completed?: boolean;
-			},
-		) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.updateTask(taskId, taskData);
-				const updatedTask = response.data.data;
-				const index = this.tasks.findIndex((t) => t.id === taskId);
-				if (index !== -1) {
-					this.tasks[index] = updatedTask;
-				}
-				if (this.currentTask?.id === taskId) {
-					this.currentTask = updatedTask;
-				}
-				return updatedTask;
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al actualizar tarea:", error);
-				throw error;
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async deleteTask(taskId: number) {
-			this.loading = true;
-			this.error = null;
-			try {
-				await taskEndpoints.deleteTask(taskId);
-				this.tasks = this.tasks.filter((t) => t.id !== taskId);
-				if (this.currentTask?.id === taskId) {
-					this.currentTask = null;
-				}
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al eliminar tarea:", error);
-				throw error;
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async completeTask(taskId: number) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.completeTask(taskId);
-				const completedTask = response.data.data;
-				const index = this.tasks.findIndex((t) => t.id === taskId);
-				if (index !== -1) {
-					this.tasks[index] = completedTask;
-				}
-				if (this.currentTask?.id === taskId) {
-					this.currentTask = completedTask;
-				}
-				return completedTask;
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al completar tarea:", error);
-				throw error;
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		async assignTask(taskId: number) {
-			this.loading = true;
-			this.error = null;
-			try {
-				const response = await taskEndpoints.assignTask(taskId);
-				return response.data.data;
-			} catch (error) {
-				this.error = handleApiError(error);
-				console.error("Error al asignar tarea:", error);
-				throw error;
-			} finally {
-				this.loading = false;
-			}
-		},
+		fetchTasksByTag,
+		fetchTaskById,
+		createTask,
+		updateTask,
+		deleteTask,
+		assignTask,
+		completeTask,
 	},
 });
+
+export type TaskStore = ReturnType<typeof useTaskStore>;
