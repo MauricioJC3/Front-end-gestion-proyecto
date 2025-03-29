@@ -1,10 +1,8 @@
 import Login from "@/modules/Auth/pages/loginPages.vue";
 import { useAuthStore } from "@/modules/Auth/stores/auth";
+import createProject from "@/modules/gestion_proyectos/pages/CreatPages.vue";
 import ProjectsAll from "@/modules/gestion_proyectos/pages/ProjectAllPages.vue";
-import ProjectTags from "@/modules/gestion_proyectos/pages/ProjectTagsPages.vue";
 import Projects from "@/modules/gestion_proyectos/pages/ProjectsPages.vue";
-import Tasks from "@/modules/gestion_proyectos/pages/TasksPages.vue";
-import pruebaPages from "@/modules/gestion_proyectos/pages/pruebaPages.vue";
 import Cars from "@/views/CarsView.vue";
 import Dashboard from "@/views/DashboardPages.vue";
 import { createRouter, createWebHistory } from "vue-router";
@@ -26,27 +24,15 @@ const routes = [
 		meta: { requiresAuth: true },
 	},
 	{
-		path: "/tags",
-		component: ProjectTags,
-		name: "Tags",
-		meta: { requiresAuth: true },
-	},
-	{
-		path: "/tasks",
-		component: Tasks,
-		name: "tasks",
-		meta: { requiresAuth: true },
-	},
-	{
 		path: "/projects/all",
 		component: ProjectsAll,
 		name: "projects-all",
 		meta: { requiresAuth: true },
 	},
 	{
-		path: "/prueba",
-		component: pruebaPages,
-		name: "prueba",
+		path: "/create/project",
+		component: createProject,
+		name: "create-project",
 		meta: { requiresAuth: true },
 	},
 ];

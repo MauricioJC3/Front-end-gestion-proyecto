@@ -1,8 +1,12 @@
-// src/api/endpoints/taskEndpoints.ts
 import api from "@/config";
 
 export const getAllTasksByTag = (tagId: number) => {
 	return api.get(`/tags/${tagId}/tasks`);
+};
+
+// Nueva función para obtener tareas por proyecto
+export const getAllTasksByProject = (projectId: number) => {
+	return api.get(`/projects/${projectId}/tasks`);
 };
 
 export const getTaskById = (taskId: number) => {
@@ -11,6 +15,7 @@ export const getTaskById = (taskId: number) => {
 
 export const createTask = (data: {
 	tag_id: number;
+	project_id: number; // Agregado project_id aquí también
 	name: string;
 	description?: string;
 	due_date?: string;
@@ -25,6 +30,8 @@ export const updateTask = (
 		description?: string;
 		due_date?: string;
 		completed?: boolean;
+		project_id?: number; // Agregado project_id aquí también
+		tag_id?: number;
 	},
 ) => {
 	return api.put(`/tasks/${taskId}`, data);
