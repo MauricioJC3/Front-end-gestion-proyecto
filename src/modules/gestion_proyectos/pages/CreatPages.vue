@@ -201,19 +201,39 @@ const getPriorityClass = (priority) => {
   }
 };
 
+// Reemplaza la función formatDateForApi actual con esta versión mejorada
 const formatDateForApi = (dateTimeString) => {
   if (!dateTimeString) return null;
   
+  // Usar el formato ISO para asegurar que no hay problemas con zonas horarias
   const date = new Date(dateTimeString);
   
+  // Formatear la fecha en el formato requerido por la API (YYYY-MM-DD HH:MM:SS)
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = '00';
+  const seconds = String(date.getSeconds()).padStart(2, '0');
   
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// También modifica la función formatDateTime para asegurar consistencia en las fechas mostradas
+const formatDateTime = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  
+  const date = new Date(dateTimeString);
+  const options = { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false
+  };
+  
+  return new Intl.DateTimeFormat('es-ES', options).format(date);
 };
 
 const createProject = async () => {
@@ -268,13 +288,15 @@ const createTask = async () => {
     return;
   }
   try {
+    
     const taskData = { 
       ...newTask.value, 
       project_id: currentProjectId.value,
-      start_date: newTask.value.start_date ? formatDateForApi(newTask.value.start_date) : null,
-      due_date: newTask.value.due_date ? formatDateForApi(newTask.value.due_date) : null
+      start_date: newTask.value.start_date ? formatDateForApi(new Date(newTask.value.start_date)) : null,
+      due_date: newTask.value.due_date ? formatDateForApi(new Date(newTask.value.due_date)) : null
     };
-    
+  
+
     await taskStore.createTask(taskData);
     newTask.value = { name: '', tag_id: '', priority: '', start_date: '', due_date: '' };
   } catch (error) {
@@ -282,11 +304,6 @@ const createTask = async () => {
   }
 };
 
-const formatDateTime = (dateTimeString) => {
-  if (!dateTimeString) return '';
-  const date = new Date(dateTimeString);
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-};
 
 const isDueDateSoon = (dateString) => {
   const today = new Date();

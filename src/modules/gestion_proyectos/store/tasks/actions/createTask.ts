@@ -34,9 +34,9 @@ export async function createTask(
 
 		// Agrega la nueva tarea al array de tareas
 		this.tasks.push(newTask);
-		console.log(
-			`Tarea creada y agregada al store: ${newTask.name} (ID: ${newTask.id}, Proyecto: ${newTask.project_id})`,
-		);
+		// console.log(
+		// 	`Tarea creada y agregada al store: ${newTask.name} (ID: ${newTask.id}, Proyecto: ${newTask.project_id})`,
+		// );
 
 		return newTask;
 	} catch (error) {
