@@ -18,7 +18,9 @@ export const createTask = (data: {
 	project_id: number; // Agregado project_id aquí también
 	name: string;
 	description?: string;
-	due_date?: string;
+	priority?: string; // Nueva propiedad
+	start_date?: string; // Nueva propiedad
+	due_date?: string; // Nueva propiedad
 }) => {
 	return api.post("/tasks", data);
 };
@@ -28,7 +30,9 @@ export const updateTask = (
 	data: {
 		name?: string;
 		description?: string;
-		due_date?: string;
+		priority?: string; // Nueva propiedad
+		start_date?: string; // Nueva propiedad
+		due_date?: string; // Nueva propiedad
 		completed?: boolean;
 		project_id?: number; // Agregado project_id aquí también
 		tag_id?: number;

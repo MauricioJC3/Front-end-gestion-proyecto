@@ -1,5 +1,5 @@
 <template>
-        <Navbar />
+  <Navbar />
 
   <div :class="['h-screen flex', themeStore.darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900']">
     <!-- Panel principal -->
@@ -11,12 +11,20 @@
           <form @submit.prevent="createProject" class="flex flex-col gap-3 mb-4">
             <input v-model="newProject.name" placeholder="Project Name" class="border p-2 rounded dark:bg-gray-700 dark:border-gray-600" required />
             <input v-model="newProject.description" placeholder="Description" class="border p-2 rounded dark:bg-gray-700 dark:border-gray-600" />
+            
+            <div class="flex gap-3">
+              <div class="flex-1">
+                <label class="block text-sm mb-1">Start Date</label>
+                <input v-model="newProject.start_date" type="datetime-local" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600" />
+              </div>
+              <div class="flex-1">
+                <label class="block text-sm mb-1">Due Date</label>
+                <input v-model="newProject.due_date" type="datetime-local" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600" />
+              </div>
+            </div>
+            
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Create</button>
           </form>
-          <!-- mostrar nombre del proyecto actual -->
-          <!-- <div v-if="currentProject" class="mt-2 text-sm text-green-600 dark:text-green-400">
-            Current project: {{ currentProject.name }}
-          </div> -->
         </div>
 
         <!-- Crear Etiqueta -->
@@ -29,10 +37,6 @@
             </div>
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Create Tag</button>
           </form>
-        <!-- mostrar la tag creada -->
-          <!-- <div v-if="projectTags.length > 0" class="mt-2 text-sm">
-            Available tags: {{ projectTags.map(t => t.name).join(', ') }}
-          </div> -->
         </div>
 
         <!-- Crear Tarea -->
@@ -40,6 +44,7 @@
           <h2 class="text-xl font-semibold mb-3">New Task</h2>
           <form @submit.prevent="createTask" class="flex flex-col gap-3 mb-4">
             <input v-model="newTask.name" placeholder="Task Name" class="border p-2 rounded dark:bg-gray-700 dark:border-gray-600" required />
+            
             <div class="flex gap-2">
               <select v-model="newTask.tag_id" class="border p-2 rounded flex-1 dark:bg-gray-700 dark:border-gray-600" required>
                 <option value="" disabled>Select a tag</option>
@@ -47,13 +52,28 @@
                   {{ tag.name }}
                 </option>
               </select>
-              <input v-model="newTask.due_date" type="date" class="border p-2 rounded flex-1 dark:bg-gray-700 dark:border-gray-600" />
+              
+              <select v-model="newTask.priority" class="border p-2 rounded flex-1 dark:bg-gray-700 dark:border-gray-600">
+                <option value="" disabled>Select priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
             </div>
+            
+            <div class="flex gap-2">
+              <div class="flex-1">
+                <label class="block text-sm mb-1">Start Date</label>
+                <input v-model="newTask.start_date" type="datetime-local" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600" />
+              </div>
+              <div class="flex-1">
+                <label class="block text-sm mb-1">Due Date</label>
+                <input v-model="newTask.due_date" type="datetime-local" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600" />
+              </div>
+            </div>
+            
             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Task</button>
           </form>
-          <!-- <div v-if="debugTasks.length > 0" class="mt-2 text-sm">
-            Latest tasks: {{ debugTasks.map(t => t.name).join(', ') }}
-          </div> -->
         </div>
       </div>
     </div>
@@ -64,6 +84,20 @@
       <div class="sticky top-0 pb-4 bg-inherit">
         <h2 class="text-2xl font-bold mb-2">{{ currentProject.name }}</h2>
         <p :class="themeStore.darkMode ? 'text-gray-300' : 'text-gray-700'" class="mb-4">{{ currentProject.description }}</p>
+        
+        <div v-if="currentProject.start_date || currentProject.due_date" class="mb-4 text-sm">
+          <div v-if="currentProject.start_date" class="flex items-center gap-1">
+            <span class="font-semibold">Start:</span> 
+            <span>{{ formatDateTime(currentProject.start_date) }}</span>
+          </div>
+          <div v-if="currentProject.due_date" class="flex items-center gap-1">
+            <span class="font-semibold">Due:</span> 
+            <span :class="isDueDateSoon(currentProject.due_date) ? 'text-red-500' : ''">
+              {{ formatDateTime(currentProject.due_date) }}
+            </span>
+          </div>
+        </div>
+        
         <div class="border-b border-gray-300 dark:border-gray-700"></div>
       </div>
       
@@ -74,17 +108,29 @@
         </div>
         
         <div v-if="getTasksByTag(tag.id).length === 0" class="pl-6 text-gray-500 italic">
-          No tasks yet (TagID: {{ tag.id }})
+          No tasks yet
         </div>
         
         <ul v-else class="space-y-2 pl-4">
           <li v-for="task in getTasksByTag(tag.id)" :key="task.id" 
               class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-            <div class="flex justify-between">
-              <span>{{ task.name }}</span>
-              <span v-if="task.due_date" :class="isDueDateSoon(task.due_date) ? 'text-red-500' : 'text-gray-500'" class="text-sm">
-                {{ formatDate(task.due_date) }}
-              </span>
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="block">{{ task.name }}</span>
+                <span v-if="task.priority" class="text-xs px-2 py-1 rounded" 
+                      :class="getPriorityClass(task.priority)">
+                  {{ task.priority }}
+                </span>
+              </div>
+              <div class="text-right">
+                <span v-if="task.start_date" class="block text-sm text-gray-500">
+                  Start: {{ formatDateTime(task.start_date) }}
+                </span>
+                <span v-if="task.due_date" 
+                      :class="isDueDateSoon(task.due_date) ? 'block text-sm text-red-500' : 'block text-sm text-gray-500'">
+                  Due: {{ formatDateTime(task.due_date) }}
+                </span>
+              </div>
             </div>
           </li>
         </ul>
@@ -93,21 +139,12 @@
       <div v-if="projectTags.length === 0" class="mt-6 text-center text-gray-500 italic">
         Add tags to organize your tasks
       </div>
-
-      <!-- Debug info para solucionar problemas -->
-      <!-- <div class="mt-8 p-3 bg-gray-200 dark:bg-gray-700 rounded-lg text-xs">
-        <div class="font-semibold">Debug Info:</div>
-        <div>Project ID: {{ currentProjectId }}</div>
-        <div>Total Tasks: {{ taskStore.tasks.length }}</div>
-        <div>Project Tags: {{ projectTags.length }}</div>
-        <div>Tasks for this project: {{ projectTasks.length }}</div>
-      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useProjectStore } from '../store/projects/projectStore';
 import { useTagStore } from '../store/tags/tagStore';
 import { useTaskStore } from '../store/tasks/taskStore';
@@ -119,36 +156,64 @@ const tagStore = useTagStore();
 const taskStore = useTaskStore();
 const themeStore = useThemeStore();
 
-const newProject = ref({ name: '', description: '' });
-const newTag = ref({ name: '', color: '#3B82F6' }); // Color azul por defecto
-const newTask = ref({ name: '', tag_id: '', due_date: '' });
-const currentProjectId = ref(null);
+const newProject = ref({ 
+  name: '', 
+  description: '',
+  start_date: '',
+  due_date: ''
+});
 
-// Para debugging
-// const debugTasks = ref([]);
+const newTag = ref({ name: '', color: '#3B82F6' });
+
+const newTask = ref({ 
+  name: '', 
+  tag_id: '', 
+  priority: '',
+  start_date: '',
+  due_date: ''
+});
+
+const currentProjectId = ref(null);
 
 const currentProject = computed(() => projectStore.projects.find(proj => proj.id === currentProjectId.value) || null);
 const projectTags = computed(() => tagStore.tags.filter(tag => tag.project_id === currentProjectId.value));
 const projectTasks = computed(() => taskStore.tasks.filter(task => task.project_id === currentProjectId.value));
 
-// Verificar datos al montar el componente
-// onMounted(() => {
-//   console.log('Stores inicializados:', {
-//     projects: projectStore.projects,
-//     tags: tagStore.tags,
-//     tasks: taskStore.tasks
-//   });
-// });
-
-// Esta función se asegura de obtener correctamente las tareas para cada etiqueta
 const getTasksByTag = (tagId) => {
-  const filteredTasks = taskStore.tasks.filter(task => 
+  return taskStore.tasks.filter(task => 
     task.tag_id === tagId && 
     task.project_id === currentProjectId.value
   );
+};
+
+const getPriorityClass = (priority) => {
+  switch(priority) {
+    case 'low':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+    case 'high':
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+    case 'urgent':
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+  }
+};
+
+const formatDateForApi = (dateTimeString) => {
+  if (!dateTimeString) return null;
   
-  // console.log(`Buscando tareas para tag ${tagId}, proyecto ${currentProjectId.value}:`, filteredTasks);
-  return filteredTasks;
+  const date = new Date(dateTimeString);
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = '00';
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
 const createProject = async () => {
@@ -157,9 +222,15 @@ const createProject = async () => {
     return;
   }
   try {
-    const createdProject = await projectStore.createProject(newProject.value);
+    const projectData = {
+      ...newProject.value,
+      start_date: newProject.value.start_date ? formatDateForApi(newProject.value.start_date) : null,
+      due_date: newProject.value.due_date ? formatDateForApi(newProject.value.due_date) : null
+    };
+    
+    const createdProject = await projectStore.createProject(projectData);
     currentProjectId.value = createdProject.id;
-    newProject.value = { name: '', description: '' };
+    newProject.value = { name: '', description: '', start_date: '', due_date: '' };
   } catch (error) {
     console.error('Error al crear el proyecto:', error);
   }
@@ -176,8 +247,7 @@ const createTag = async () => {
   }
   try {
     const newTagData = { ...newTag.value, project_id: currentProjectId.value };
-    const createdTag = await tagStore.createTag(newTagData);
-    // console.log('Etiqueta creada:', createdTag);
+    await tagStore.createTag(newTagData);
     newTag.value = { name: '', color: '#3B82F6' };
   } catch (error) {
     console.error('Error al crear la etiqueta:', error);
@@ -200,28 +270,22 @@ const createTask = async () => {
   try {
     const taskData = { 
       ...newTask.value, 
-      project_id: currentProjectId.value 
+      project_id: currentProjectId.value,
+      start_date: newTask.value.start_date ? formatDateForApi(newTask.value.start_date) : null,
+      due_date: newTask.value.due_date ? formatDateForApi(newTask.value.due_date) : null
     };
     
-    // console.log('Creando tarea con datos:', taskData);
-    const createdTask = await taskStore.createTask(taskData);
-    
-    // Guardar la tarea creada en el array de debug para verificación
-    // debugTasks.value.push(createdTask);
-    
-    // console.log('Tarea creada:', createdTask);
-    // console.log('Estado actual de tareas:', taskStore.tasks);
-    
-    newTask.value = { name: '', tag_id: '', due_date: '' };
+    await taskStore.createTask(taskData);
+    newTask.value = { name: '', tag_id: '', priority: '', start_date: '', due_date: '' };
   } catch (error) {
     console.error('Error al crear la tarea:', error);
   }
 };
 
-// Funciones de utilidad para fechas
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString();
+const formatDateTime = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 };
 
 const isDueDateSoon = (dateString) => {
@@ -231,6 +295,4 @@ const isDueDateSoon = (dateString) => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays <= 3 && diffDays >= 0;
 };
-
-// Observar cambios en las tareas para depuración
 </script>

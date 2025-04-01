@@ -12,6 +12,8 @@ export const createProject = (data: {
 	name: string;
 	description?: string;
 	status?: string;
+	start_date?: string; // Nueva propiedad
+	due_date?: string; // Nueva propiedad
 }) => {
 	return api.post("/projects", data);
 };
@@ -22,6 +24,8 @@ export const updateProject = (
 		name?: string;
 		description?: string;
 		status?: string;
+		start_date?: string; // Nueva propiedad
+		due_date?: string; // Nueva propiedad
 	},
 ) => {
 	return api.put(`/projects/${projectId}`, data);

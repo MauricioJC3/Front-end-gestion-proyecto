@@ -4,7 +4,13 @@ import type { ProjectStore } from "../projectStore";
 
 export async function createProject(
 	this: ProjectStore,
-	projectData: { name: string; description?: string; status?: string },
+	projectData: {
+		name: string;
+		description?: string;
+		status?: string;
+		start_date?: string; // Added new field
+		due_date?: string; // Added new field
+	},
 ) {
 	this.loading = true;
 	this.error = null;

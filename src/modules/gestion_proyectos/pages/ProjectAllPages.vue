@@ -1,5 +1,5 @@
 <template>
-        <Navbar />
+  <Navbar />
   <!-- 
     CONTENEDOR PRINCIPAL
     Este div externo controla el tema claro/oscuro y el espaciado general 
@@ -20,7 +20,8 @@
       :key="project.id" 
       :class="{ 
         'bg-gray-800 border-gray-700': themeStore.darkMode,
-        'bg-white border-gray-300': !themeStore.darkMode
+        'bg-white border-gray-300': !themeStore.darkMode,
+        'opacity-75': isProjectExpired(project)
       }"
       class="w-full sm:w-[450px] border rounded-2xl p-6 cursor-pointer shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 max-h-80 overflow-hidden"
       @click="openProjectModal(project)"
@@ -61,8 +62,14 @@
       <!-- Pie de tarjeta con estado y fecha -->
       <div class="mt-4 flex justify-between items-center text-gray-500 text-sm">
         <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-          <span>Activo</span>
+          <span 
+            :class="{
+              'bg-green-500': !isProjectExpired(project),
+              'bg-red-500': isProjectExpired(project)
+            }" 
+            class="w-3 h-3 rounded-full"
+          ></span>
+          <span>{{ isProjectExpired(project) ? 'Vencido' : 'Activo' }}</span>
         </div>
         <span class="text-xs">{{ formatDate(project.created_at) }}</span>
       </div>
@@ -88,6 +95,40 @@
       >
         {{ selectedProject?.description }}
       </p>
+      
+      <!-- Información de fechas del proyecto -->
+      <div 
+        :class="{ 
+          'bg-gray-800': themeStore.darkMode, 
+          'bg-gray-200': !themeStore.darkMode 
+        }" 
+        class="mb-6 p-4 rounded-lg"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-semibold text-sm mb-1">Fecha de inicio:</h4>
+            <p>{{ selectedProject?.start_date ? formatDate(selectedProject.start_date) : 'No definida' }}</p>
+          </div>
+          <div>
+            <h4 class="font-semibold text-sm mb-1">Fecha límite:</h4>
+            <p 
+              :class="{
+                'text-red-500 font-bold': selectedProject && isProjectExpired(selectedProject)
+              }"
+            >
+              {{ selectedProject?.due_date ? formatDate(selectedProject.due_date) : 'No definida' }}
+            </p>
+          </div>
+        </div>
+        
+        <!-- Alerta de proyecto vencido -->
+        <div 
+          v-if="selectedProject && isProjectExpired(selectedProject)"
+          class="mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-700 rounded-lg text-red-500 text-center"
+        >
+          <span class="font-bold">¡PROYECTO INCOMPLETO!</span> - Este proyecto ha superado su fecha límite y no puede ser editado.
+        </div>
+      </div>
       
       <!-- Sección de Tags y Tareas -->
       <div 
@@ -128,30 +169,72 @@
                 :key="task.id" 
                 :class="{ 
                   'bg-gray-700': themeStore.darkMode,
-                  'bg-gray-200': !themeStore.darkMode
+                  'bg-gray-200': !themeStore.darkMode,
+                  'opacity-75': isTaskExpired(task)
                 }" 
-                class="flex justify-between items-center px-4 py-3 rounded-lg shadow-sm"
+                class="flex flex-col rounded-lg shadow-sm"
               >
-                <div class="flex items-center space-x-3">
-                  <input 
-                    type="checkbox" 
-                    :checked="task.completed" 
-                    @change="toggleTaskCompletion(task)" 
-                    class="w-5 h-5 accent-blue-500"
-                  >
+                <!-- Información principal de la tarea -->
+                <div class="flex justify-between items-center px-4 py-3">
+                  <div class="flex items-center space-x-3">
+                    <input 
+                      type="checkbox" 
+                      :checked="task.completed" 
+                      @change="toggleTaskCompletion(task)" 
+                      class="w-5 h-5 accent-blue-500"
+                      :disabled="isProjectExpired(selectedProject) || isTaskExpired(task)"
+                    >
+                    <span 
+                      :class="{ 
+                        'line-through text-gray-500': task.completed,
+                        'text-red-500': isTaskExpired(task) && !task.completed,
+                        'text-white': !task.completed && !isTaskExpired(task) && themeStore.darkMode,
+                        'text-gray-800': !task.completed && !isTaskExpired(task) && !themeStore.darkMode 
+                      }"
+                    >
+                      {{ task.name }}
+                    </span>
+                    
+                    <!-- Indicador de prioridad -->
+                    <span 
+                      v-if="task.priority" 
+                      :class="{
+                        'bg-red-500': task.priority === 'alta',
+                        'bg-yellow-500': task.priority === 'media',
+                        'bg-blue-500': task.priority === 'baja'
+                      }"
+                      class="text-xs text-white px-2 py-1 rounded"
+                    >
+                      {{ task.priority.toUpperCase() }}
+                    </span>
+                  </div>
+                  
+                  <!-- Mensaje de vencimiento de tarea -->
                   <span 
-                    :class="{ 
-                      'line-through text-gray-500': task.completed,
-                      'text-white': !task.completed && themeStore.darkMode,
-                      'text-gray-800': !task.completed && !themeStore.darkMode 
-                    }"
+                    v-if="isTaskExpired(task) && !task.completed" 
+                    class="text-xs text-red-500 font-bold mr-2"
                   >
-                    {{ task.name }}
+                    VENCIDA
                   </span>
                 </div>
-                <span class="text-xs text-gray-400 italic">
-                  {{ formatDate(task.due_date) }}
-                </span>
+                
+                <!-- Fechas de la tarea -->
+                <div 
+                  :class="{ 
+                    'bg-gray-600': themeStore.darkMode, 
+                    'bg-gray-300': !themeStore.darkMode 
+                  }"
+                  class="text-xs text-gray-400 px-4 py-2 flex justify-between rounded-b-lg"
+                >
+                  <span v-if="task.start_date">
+                    Inicio: {{ formatDate(task.start_date) }}
+                  </span>
+                  <span 
+                    :class="{ 'text-red-500 font-bold': isTaskExpired(task) }"
+                  >
+                    Límite: {{ formatDate(task.due_date) }}
+                  </span>
+                </div>
               </div>
               
               <!-- Mensaje si no hay tareas -->
@@ -204,6 +287,34 @@ const tasksByTag = computed(() => {
 });
 
 /**
+ * Verifica si un proyecto ha vencido según su fecha límite
+ * @param {Object} project - Proyecto a verificar
+ * @return {boolean} True si el proyecto ha vencido
+ */
+const isProjectExpired = (project) => {
+  if (!project || !project.due_date) return false;
+  
+  const dueDate = new Date(project.due_date);
+  const now = new Date();
+  
+  return now > dueDate;
+};
+
+/**
+ * Verifica si una tarea ha vencido según su fecha límite
+ * @param {Object} task - Tarea a verificar
+ * @return {boolean} True si la tarea ha vencido
+ */
+const isTaskExpired = (task) => {
+  if (!task || !task.due_date) return false;
+  
+  const dueDate = new Date(task.due_date);
+  const now = new Date();
+  
+  return now > dueDate;
+};
+
+/**
  * Formatea una fecha ISO a formato localizado español
  * @param {string} dateString - Fecha en formato ISO
  * @return {string} Fecha formateada
@@ -215,6 +326,7 @@ const formatDate = (dateString) => {
     weekday: 'short', 
     day: 'numeric', 
     month: 'short', 
+    year: 'numeric',
     hour: '2-digit', 
     minute: '2-digit' 
   });
@@ -256,6 +368,11 @@ const closeProjectModal = () => {
  * @param {Object} task - Tarea a actualizar
  */
 const toggleTaskCompletion = async (task) => {
+  // No permitir marcar/desmarcar tareas si el proyecto ha vencido o la tarea ha vencido
+  if (isProjectExpired(selectedProject.value) || isTaskExpired(task)) {
+    return;
+  }
+  
   try {
     await taskStore.completeTask(task.id);
     task.completed = !task.completed;

@@ -6,10 +6,12 @@ export async function createTask(
 	this: TaskStore,
 	taskData: {
 		tag_id: number;
-		project_id: number; // Asegúrate de que project_id está siempre presente
+		project_id: number;
 		name: string;
 		description?: string;
-		due_date?: string;
+		priority?: string; // Added new field
+		start_date?: string; // Added new field
+		due_date?: string; // Added new field
 	},
 ) {
 	this.loading = true;
