@@ -91,7 +91,7 @@
             <span>{{ formatDateTime(currentProject.start_date) }}</span>
           </div>
           <div v-if="currentProject.due_date" class="flex items-center gap-1">
-            <span class="font-semibold">Due:</span> 
+            <span class="font-semibold">Due:</span>
             <span :class="isDueDateSoon(currentProject.due_date) ? 'text-red-500' : ''">
               {{ formatDateTime(currentProject.due_date) }}
             </span>
@@ -150,6 +150,7 @@ import { useTagStore } from '../store/tags/tagStore';
 import { useTaskStore } from '../store/tasks/taskStore';
 import { useThemeStore } from '@/store/themeStore';
 import Navbar from '@/components/Navbar.vue';
+import { formatDateForApi, formatDateTime, isDueDateSoon } from '@/util/dateUtils';
 
 const projectStore = useProjectStore();
 const tagStore = useTagStore();
@@ -199,41 +200,6 @@ const getPriorityClass = (priority) => {
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
-};
-
-// Reemplaza la función formatDateForApi actual con esta versión mejorada
-const formatDateForApi = (dateTimeString) => {
-  if (!dateTimeString) return null;
-  
-  // Usar el formato ISO para asegurar que no hay problemas con zonas horarias
-  const date = new Date(dateTimeString);
-  
-  // Formatear la fecha en el formato requerido por la API (YYYY-MM-DD HH:MM:SS)
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
-// También modifica la función formatDateTime para asegurar consistencia en las fechas mostradas
-const formatDateTime = (dateTimeString) => {
-  if (!dateTimeString) return '';
-  
-  const date = new Date(dateTimeString);
-  const options = { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric',
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false
-  };
-  
-  return new Intl.DateTimeFormat('es-ES', options).format(date);
 };
 
 const createProject = async () => {
@@ -288,7 +254,6 @@ const createTask = async () => {
     return;
   }
   try {
-    
     const taskData = { 
       ...newTask.value, 
       project_id: currentProjectId.value,
@@ -296,20 +261,10 @@ const createTask = async () => {
       due_date: newTask.value.due_date ? formatDateForApi(new Date(newTask.value.due_date)) : null
     };
   
-
     await taskStore.createTask(taskData);
     newTask.value = { name: '', tag_id: '', priority: '', start_date: '', due_date: '' };
   } catch (error) {
     console.error('Error al crear la tarea:', error);
   }
-};
-
-
-const isDueDateSoon = (dateString) => {
-  const today = new Date();
-  const dueDate = new Date(dateString);
-  const diffTime = dueDate - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays <= 3 && diffDays >= 0;
 };
 </script>

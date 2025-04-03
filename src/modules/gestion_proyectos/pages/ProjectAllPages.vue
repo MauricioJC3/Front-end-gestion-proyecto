@@ -264,6 +264,8 @@ import { useTaskStore } from '../store/tasks/taskStore';
 import { useThemeStore } from '@/store/themeStore';
 import GenericModal from '@/components/GenericModal.vue';
 import Navbar from '@/components/Navbar.vue';
+import { formatDate, isDueDateSoon } from '@/util/dateUtils';
+
 
 // Stores
 const projectStore = useProjectStore();
@@ -312,24 +314,6 @@ const isTaskExpired = (task) => {
   const now = new Date();
   
   return now > dueDate;
-};
-
-/**
- * Formatea una fecha ISO a formato localizado español
- * @param {string} dateString - Fecha en formato ISO
- * @return {string} Fecha formateada
- */
-const formatDate = (dateString) => {
-  if (!dateString) return "Sin fecha";
-  
-  return new Date(dateString).toLocaleString('es-ES', { 
-    weekday: 'short', 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric',
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
 };
 
 /**
