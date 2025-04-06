@@ -3,6 +3,8 @@ import { useAuthStore } from "@/modules/Auth/stores/auth";
 import createProject from "@/modules/gestion_proyectos/pages/CreatPages.vue";
 import ProjectsAll from "@/modules/gestion_proyectos/pages/ProjectAllPages.vue";
 import Projects from "@/modules/gestion_proyectos/pages/ProjectsPages.vue";
+import KanbanBoard from "@/modules/kamban/pages/KanbanBoard.vue";
+import KanbanList from "@/modules/kamban/pages/KanbanBoardList.vue";
 import Cars from "@/views/CarsView.vue";
 import Dashboard from "@/views/DashboardPages.vue";
 import { createRouter, createWebHistory } from "vue-router";
@@ -33,6 +35,18 @@ const routes = [
 		path: "/create/project",
 		component: createProject,
 		name: "create-project",
+		meta: { requiresAuth: true },
+	},
+	{
+		path: "/kanban/List",
+		component: KanbanList,
+		name: "kanban",
+		meta: { requiresAuth: true },
+	},
+	{
+		path: "/kanban/Board/:boardId",
+		component: KanbanBoard,
+		name: "kanban-board",
 		meta: { requiresAuth: true },
 	},
 ];
